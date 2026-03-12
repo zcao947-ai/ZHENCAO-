@@ -17,6 +17,7 @@ export default function AdminPortfolioPage() {
     is_published: true,
     display_order: 0,
   });
+  const [imageUploading, setImageUploading] = useState(false);
 
   const supabase = createClient();
 
@@ -111,6 +112,7 @@ export default function AdminPortfolioPage() {
                 <ImageUploader
                   value={form.image_url}
                   onChange={(url) => setForm({ ...form, image_url: url })}
+                  onLoadingChange={setImageUploading}
                   bucket="portfolio"
                 />
               </div>
@@ -155,8 +157,8 @@ export default function AdminPortfolioPage() {
                 <label className="text-sm text-gray-400">Hiển thị công khai</label>
               </div>
               <div className="flex gap-3">
-                <button type="submit" className="bg-[#C9A96E] text-black px-6 py-2 rounded-lg font-semibold hover:bg-[#D4B97A]">
-                  {editingItem ? "Cập nhật" : "Thêm"}
+                <button type="submit" disabled={imageUploading} className="bg-[#C9A96E] text-black px-6 py-2 rounded-lg font-semibold hover:bg-[#D4B97A] disabled:opacity-50 disabled:cursor-not-allowed">
+                  {imageUploading ? "Đang tải ảnh..." : editingItem ? "Cập nhật" : "Thêm"}
                 </button>
                 <button type="button" onClick={resetForm} className="px-6 py-2 rounded-lg border border-gray-700 text-gray-400 hover:text-white">
                   Hủy

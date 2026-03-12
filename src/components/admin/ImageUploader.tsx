@@ -6,16 +6,18 @@ import Image from "next/image";
 interface ImageUploaderProps {
   value?: string;
   onChange: (url: string) => void;
+  onLoadingChange?: (loading: boolean) => void;
   bucket?: string;
 }
 
-export default function ImageUploader({ value, onChange, bucket = "portfolio" }: ImageUploaderProps) {
+export default function ImageUploader({ value, onChange, onLoadingChange, bucket = "portfolio" }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(value || null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
+    onLoadingChange?.(true);
     const formData = new FormData();
     formData.append("file", file);
     formData.append("bucket", bucket);
@@ -37,6 +39,7 @@ export default function ImageUploader({ value, onChange, bucket = "portfolio" }:
       alert("Upload thất bại");
     } finally {
       setUploading(false);
+      onLoadingChange?.(false);
     }
   };
 
