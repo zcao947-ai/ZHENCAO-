@@ -10,11 +10,32 @@ export default function ContactForm() {
     email: "",
     message: "",
   });
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Cảm ơn bạn! Tin nhắn đã được gửi thành công.");
-    setFormData({ name: "", email: "", message: "" });
+    setStatus("loading");
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, contact_type: "general" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErrorMsg(data.error || "Có lỗi xảy ra.");
+        setStatus("error");
+        return;
+      }
+      setStatus("success");
+      setFormData({ name: "", email: "", message: "" });
+    } catch {
+      setErrorMsg("Không thể kết nối. Vui lòng thử lại.");
+      setStatus("error");
+    }
   };
 
   const inputClasses = cn(
@@ -23,11 +44,33 @@ export default function ContactForm() {
     "focus:border-gold/50 focus:bg-white/[0.05] focus:outline-none"
   );
 
+  if (status === "success") {
+    return (
+      <div className="border border-gold/20 bg-gold/5 p-8 text-center md:p-12">
+        <div className="mb-4 text-4xl">&#10003;</div>
+        <h3 className="font-display text-xl text-gold">Cảm ơn bạn!</h3>
+        <p className="mt-2 text-white/60">Tin nhắn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất.</p>
+        <button
+          onClick={() => setStatus("idle")}
+          className="mt-6 text-sm text-gold underline underline-offset-4 hover:text-gold/80"
+        >
+          Gửi tin nhắn khác
+        </button>
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={handleSubmit}
       className="space-y-6 border border-white/10 bg-white/[0.02] p-8 md:p-12"
     >
+      {status === "error" && (
+        <div className="border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          {errorMsg}
+        </div>
+      )}
+
       <div>
         <label className="mb-2 block text-sm uppercase tracking-wider text-white/40">
           Tên
@@ -77,8 +120,8 @@ export default function ContactForm() {
       </div>
 
       <div className="pt-4">
-        <Button type="submit" variant="primary" size="lg" className="w-full">
-          Gửi tin nhắn
+        <Button type="submit" variant="primary" size="lg" className="w-full" disabled={status === "loading"}>
+          {status === "loading" ? "Đang gửi..." : "Gửi tin nhắn"}
         </Button>
       </div>
     </form>

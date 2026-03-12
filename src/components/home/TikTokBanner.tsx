@@ -42,7 +42,7 @@ export default function TikTokBanner() {
             </div>
 
             <Button
-              href="https://tiktok.com/@minhlee.ai"
+              href="https://www.tiktok.com/@minh.lee.nhaconoc?_r=1&_t=ZS-94d4yjNOeYe"
               variant="outline"
               size="lg"
             >

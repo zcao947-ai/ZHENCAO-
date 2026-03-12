@@ -9,10 +9,12 @@ export const NAV_ITEMS = [
 ];
 
 export const SOCIAL_LINKS = {
-  tiktok: "https://tiktok.com/@minhlee",
-  facebook: "https://facebook.com/minhlee",
+  tiktok: "https://www.tiktok.com/@minh.lee.nhaconoc?_r=1&_t=ZS-94d4yjNOeYe",
+  facebook: "https://www.facebook.com/share/1Az3jPzGfY/",
   instagram: "https://instagram.com/minhlee",
 };
+
+export const CONTACT_EMAIL = "leeminh1204@gmail.com";
 
 export const PORTFOLIO_CATEGORIES = [
   { value: "all", label: "T\u1ea5t c\u1ea3" },

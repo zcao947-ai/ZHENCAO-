@@ -83,10 +83,10 @@ export default function Footer() {
               <p className="text-sm text-white/40">
                 <span className="text-gold/60">Email:</span>{" "}
                 <a
-                  href="mailto:contact@minhlee.ai"
+                  href="mailto:leeminh1204@gmail.com"
                   className="transition-colors hover:text-gold"
                 >
-                  contact@minhlee.ai
+                  leeminh1204@gmail.com
                 </a>
               </p>
             </div>

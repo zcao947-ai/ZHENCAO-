@@ -1,25 +1,27 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import Button from "@/components/ui/Button";
-
-const products = [
-  {
-    name: "Túi xách thời trang",
-    description: "Túi xách da cao cấp, thiết kế tinh tế và sang trọng cho phong cách hiện đại.",
-    price: "2.490.000đ",
-  },
-  {
-    name: "Kính mát cao cấp",
-    description: "Kính mát chống UV, phong cách thời thượng phù hợp mọi dịp.",
-    price: "1.290.000đ",
-  },
-  {
-    name: "Đồng hồ thanh lịch",
-    description: "Đồng hồ đeo tay tự động, dây da nhập khẩu từ Ý, thiết kế cổ điển.",
-    price: "4.890.000đ",
-  },
-];
+import type { Product } from "@/types/database";
 
 export default function AffiliatePreview() {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("*")
+      .eq("is_published", true)
+      .order("display_order", { ascending: true })
+      .limit(3)
+      .then(({ data }) => setProducts(data || []));
+  }, []);
+
+  if (products.length === 0) return null;
+
   return (
     <AnimatedSection className="px-6 py-24 md:px-12">
       <div className="mx-auto max-w-6xl">
@@ -35,26 +37,22 @@ export default function AffiliatePreview() {
         <div className="grid gap-6 md:grid-cols-3">
           {products.map((product) => (
             <div
-              key={product.name}
+              key={product.id}
               className="group overflow-hidden rounded-2xl border border-white/5 bg-zinc-950 transition-all duration-500 hover:border-gold/20"
             >
-              {/* Placeholder image */}
-              <div className="placeholder-gradient-gold relative aspect-square overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="0.5"
-                    className="text-white/20 transition-colors duration-300 group-hover:text-gold/40"
-                  >
-                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
-                    <line x1="7" y1="7" x2="7.01" y2="7" />
-                  </svg>
-                </div>
-                {/* Hover shine effect */}
+              {/* Product image */}
+              <div className="relative aspect-square overflow-hidden">
+                {product.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                ) : (
+                  <div className="placeholder-gradient-gold h-full w-full" />
+                )}
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               </div>
 
@@ -63,14 +61,18 @@ export default function AffiliatePreview() {
                 <h3 className="font-display text-lg font-semibold text-white">
                   {product.name}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/40">
-                  {product.description}
-                </p>
+                {product.description && (
+                  <p className="mt-2 text-sm leading-relaxed text-white/40">
+                    {product.description}
+                  </p>
+                )}
                 <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-semibold text-gold">
-                    {product.price}
-                  </span>
-                  <Button variant="outline" size="sm">
+                  {product.price && (
+                    <span className="text-lg font-semibold text-gold">
+                      {product.price}
+                    </span>
+                  )}
+                  <Button variant="outline" size="sm" href={product.buy_url}>
                     Mua ngay
                   </Button>
                 </div>

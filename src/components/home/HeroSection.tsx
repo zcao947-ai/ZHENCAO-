@@ -70,7 +70,7 @@ export default function HeroSection() {
             Khám phá Portfolio
           </Button>
           <Button
-            href="https://tiktok.com/@minhlee.ai"
+            href="https://www.tiktok.com/@minh.lee.nhaconoc?_r=1&_t=ZS-94d4yjNOeYe"
             variant="outline"
             size="lg"
           >
