@@ -1,42 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
+import type { PortfolioItem } from '@/types/database';
 
-type Category = 'Tất cả' | 'Fashion' | 'Lifestyle' | 'Street' | 'Editorial';
-
-interface GalleryItem {
-  id: number;
-  title: string;
-  category: Exclude<Category, 'Tất cả'>;
-  aspect: string;
-}
-
-const items: GalleryItem[] = [
-  { id: 1, title: 'Ánh sáng thành phố', category: 'Fashion', aspect: 'aspect-[3/4]' },
-  { id: 2, title: 'Buổi sáng cafe', category: 'Lifestyle', aspect: 'aspect-square' },
-  { id: 3, title: 'Đường phố Sài Gòn', category: 'Street', aspect: 'aspect-[4/5]' },
-  { id: 4, title: 'Bộ sưu tập mùa hè', category: 'Editorial', aspect: 'aspect-[3/4]' },
-  { id: 5, title: 'Phong cách tối giản', category: 'Fashion', aspect: 'aspect-[4/5]' },
-  { id: 6, title: 'Hoàng hôn trên phố', category: 'Street', aspect: 'aspect-square' },
-  { id: 7, title: 'Thời trang đường phố', category: 'Fashion', aspect: 'aspect-[3/4]' },
-  { id: 8, title: 'Khoảnh khắc yên bình', category: 'Lifestyle', aspect: 'aspect-[4/5]' },
-  { id: 9, title: 'Nghệ thuật đương đại', category: 'Editorial', aspect: 'aspect-[3/4]' },
-  { id: 10, title: 'Góc phố quen thuộc', category: 'Street', aspect: 'aspect-square' },
-  { id: 11, title: 'Đêm lung linh', category: 'Fashion', aspect: 'aspect-[4/5]' },
-  { id: 12, title: 'Phong cách tự do', category: 'Lifestyle', aspect: 'aspect-[3/4]' },
+type Category = 'Tất cả' | 'fashion' | 'lifestyle' | 'street' | 'editorial';
+const categories: { label: string; value: Category }[] = [
+  { label: 'Tất cả', value: 'Tất cả' },
+  { label: 'Fashion', value: 'fashion' },
+  { label: 'Lifestyle', value: 'lifestyle' },
+  { label: 'Street', value: 'street' },
+  { label: 'Editorial', value: 'editorial' },
 ];
 
-const categories: Category[] = ['Tất cả', 'Fashion', 'Lifestyle', 'Street', 'Editorial'];
-
 export default function PortfolioGallery() {
+  const [items, setItems] = useState<PortfolioItem[]>([]);
   const [active, setActive] = useState<Category>('Tất cả');
-  const [lightbox, setLightbox] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('portfolio_items')
+      .select('*')
+      .eq('is_published', true)
+      .order('display_order', { ascending: true })
+      .then(({ data }) => {
+        setItems(data || []);
+        setLoading(false);
+      });
+  }, []);
 
   const filtered = active === 'Tất cả' ? items : items.filter((i) => i.category === active);
-  const lightboxItem = lightbox !== null ? filtered.find((i) => i.id === lightbox) : null;
   const lightboxIndex = lightbox !== null ? filtered.findIndex((i) => i.id === lightbox) : -1;
+  const lightboxItem = lightboxIndex !== -1 ? filtered[lightboxIndex] : null;
 
   const navigate = (dir: -1 | 1) => {
     if (lightboxIndex === -1) return;
@@ -50,57 +50,70 @@ export default function PortfolioGallery() {
       <div className="mb-12 flex flex-wrap justify-center gap-2">
         {categories.map((cat) => (
           <button
-            key={cat}
-            onClick={() => setActive(cat)}
+            key={cat.value}
+            onClick={() => setActive(cat.value)}
             className={cn(
               'px-5 py-2.5 text-sm uppercase tracking-wider transition-all duration-300 cursor-pointer',
-              active === cat
+              active === cat.value
                 ? 'bg-gold text-black'
                 : 'border border-white/10 text-white/60 hover:border-gold/40 hover:text-gold'
             )}
           >
-            {cat}
+            {cat.label}
           </button>
         ))}
       </div>
 
+      {/* Loading */}
+      {loading && (
+        <div className="text-center py-24 text-white/40">Đang tải...</div>
+      )}
+
+      {/* Empty */}
+      {!loading && filtered.length === 0 && (
+        <div className="text-center py-24 text-white/40">Chưa có ảnh nào.</div>
+      )}
+
       {/* Masonry Grid */}
-      <div className="columns-2 gap-4 md:columns-3 lg:columns-4">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((item) => (
-            <motion.div
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4 }}
-              className="mb-4 break-inside-avoid"
-            >
-              <button
-                onClick={() => setLightbox(item.id)}
-                className="group relative block w-full cursor-pointer overflow-hidden"
+      {!loading && filtered.length > 0 && (
+        <div className="columns-2 gap-4 md:columns-3 lg:columns-4">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((item) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4 }}
+                className="mb-4 break-inside-avoid"
               >
-                <div
-                  className={cn(
-                    'placeholder-gradient-gold w-full transition-transform duration-700 group-hover:scale-105',
-                    item.aspect
-                  )}
-                />
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <span className="mb-2 rounded-sm bg-gold/90 px-2 py-0.5 text-[10px] uppercase tracking-wider text-black">
-                    {item.category}
-                  </span>
-                  <span className="font-display text-sm text-white">
-                    {item.title}
-                  </span>
-                </div>
-              </button>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+                <button
+                  onClick={() => setLightbox(item.id)}
+                  className="group relative block w-full cursor-pointer overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.image_url}
+                    alt={item.caption || item.category}
+                    className="w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex flex-col items-end justify-end bg-gradient-to-t from-black/80 via-black/10 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <span className="rounded-sm bg-gold/90 px-2 py-0.5 text-[10px] uppercase tracking-wider text-black">
+                      {item.category}
+                    </span>
+                    {item.caption && (
+                      <span className="mt-1 font-display text-xs text-white line-clamp-1">
+                        {item.caption}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Lightbox */}
       <AnimatePresence>
@@ -120,7 +133,6 @@ export default function PortfolioGallery() {
               className="relative max-h-[85vh] w-full max-w-3xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close */}
               <button
                 onClick={() => setLightbox(null)}
                 className="absolute -top-12 right-0 text-sm uppercase tracking-wider text-white/60 transition-colors hover:text-gold cursor-pointer"
@@ -128,20 +140,18 @@ export default function PortfolioGallery() {
                 Đóng ✕
               </button>
 
-              {/* Image */}
-              <div className="placeholder-gradient-gold aspect-[3/4] w-full border border-white/10">
-                <div className="flex h-full flex-col items-center justify-center gap-3">
-                  <span className="rounded-sm bg-gold/90 px-3 py-1 text-xs uppercase tracking-wider text-black">
-                    {lightboxItem.category}
-                  </span>
-                  <span className="font-display text-xl text-white">
-                    {lightboxItem.title}
-                  </span>
-                </div>
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={lightboxItem.image_url}
+                alt={lightboxItem.caption || lightboxItem.category}
+                className="max-h-[75vh] w-full object-contain"
+              />
 
-              {/* Navigation */}
-              <div className="mt-6 flex items-center justify-between">
+              {lightboxItem.caption && (
+                <p className="mt-3 text-center text-sm text-white/60">{lightboxItem.caption}</p>
+              )}
+
+              <div className="mt-4 flex items-center justify-between">
                 <button
                   onClick={() => navigate(-1)}
                   className="px-4 py-2 text-sm uppercase tracking-wider text-white/60 transition-colors hover:text-gold cursor-pointer"
