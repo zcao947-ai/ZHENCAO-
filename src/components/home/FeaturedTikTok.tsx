@@ -14,8 +14,9 @@ export default function FeaturedTikTok() {
       .from("videos")
       .select("*")
       .eq("is_published", true)
-      .eq("type", "tiktok")
+      .order("is_featured", { ascending: false })
       .order("display_order", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(3)
       .then(({ data }) => setVideos(data || []));
   }, []);
@@ -35,13 +36,14 @@ export default function FeaturedTikTok() {
           <span className="text-gradient-gold">MinhLee</span>
         </h2>
         <p className="mt-4 text-white/50">
-          Những video mới nhất từ TikTok của MinhLee
+          Những video mới nhất của MinhLee
         </p>
 
         {videos.length > 0 ? (
           <div className={`mx-auto mt-12 grid gap-6 ${videos.length === 1 ? "max-w-lg" : videos.length === 2 ? "max-w-3xl grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-3"}`}>
             {videos.map((video) => {
               const embedUrl = video.tiktok_url ? getTikTokEmbedUrl(video.tiktok_url) : null;
+              const videoLink = video.tiktok_url || video.video_url;
               return (
                 <div key={video.id} className="group">
                   <div className="relative aspect-[9/16] w-full overflow-hidden rounded-2xl border border-white/5 bg-black">
@@ -52,9 +54,9 @@ export default function FeaturedTikTok() {
                         allowFullScreen
                         allow="encrypted-media"
                       />
-                    ) : video.tiktok_url ? (
+                    ) : videoLink ? (
                       <a
-                        href={video.tiktok_url}
+                        href={videoLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="absolute inset-0 flex flex-col items-center justify-center gap-4 placeholder-gradient-gold"
@@ -69,12 +71,16 @@ export default function FeaturedTikTok() {
                           </svg>
                         </div>
                         <span className="relative z-10 text-sm uppercase tracking-widest text-white/60">
-                          Xem trên TikTok
+                          Xem video
                         </span>
                       </a>
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 placeholder-gradient-gold">
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-gold/30 bg-gold/10">
+                        {video.thumbnail_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={video.thumbnail_url} alt={video.title} className="absolute inset-0 h-full w-full object-cover" />
+                        ) : null}
+                        <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border border-gold/30 bg-gold/10">
                           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="ml-1 text-gold">
                             <path d="M8 5v14l11-7z" />
                           </svg>
