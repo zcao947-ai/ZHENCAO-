@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 
 interface ImageUploaderProps {
   value?: string;
@@ -18,25 +19,29 @@ export default function ImageUploader({ value, onChange, onLoadingChange, bucket
   const handleUpload = async (file: File) => {
     setUploading(true);
     onLoadingChange?.(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("bucket", bucket);
 
     try {
-      const res = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const supabase = createClient();
+      const ext = file.name.split(".").pop() || "jpg";
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
-      const data = await res.json();
-      if (data.url) {
-        setPreview(data.url);
-        onChange(data.url);
-      } else {
-        alert(data.error || "Upload thất bại");
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        alert(`Upload thất bại: ${uploadError.message}`);
+        return;
       }
-    } catch {
-      alert("Upload thất bại");
+
+      const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
+      setPreview(data.publicUrl);
+      onChange(data.publicUrl);
+    } catch (err) {
+      alert(`Upload thất bại: ${err}`);
     } finally {
       setUploading(false);
       onLoadingChange?.(false);
@@ -46,7 +51,6 @@ export default function ImageUploader({ value, onChange, onLoadingChange, bucket
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Show preview immediately
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
