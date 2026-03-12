@@ -74,16 +74,28 @@ export default function AdminDashboard() {
             <Link href="/admin/products" className="block text-[#C9A96E] hover:underline">
               + Thêm sản phẩm affiliate
             </Link>
+            <Link href="/admin/contacts" className="block text-[#C9A96E] hover:underline">
+              + Xem tin nhắn liên hệ
+            </Link>
+            <Link href="/admin/pages" className="block text-[#C9A96E] hover:underline">
+              + Chỉnh sửa nội dung trang
+            </Link>
+            <Link href="/admin/settings" className="block text-[#C9A96E] hover:underline">
+              + Cài đặt website
+            </Link>
           </div>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <h2 className="text-lg font-semibold mb-4">Hướng dẫn</h2>
           <ul className="text-sm text-gray-400 space-y-2">
-            <li>1. Thêm ảnh vào Portfolio để hiển thị trên trang chủ</li>
-            <li>2. Thêm video TikTok hoặc upload video</li>
-            <li>3. Thêm sản phẩm affiliate với link Shopee/TikTok Shop</li>
-            <li>4. Chỉnh sửa nội dung các trang trong mục &quot;Trang nội dung&quot;</li>
+            <li>1. Thêm ảnh vào <strong>Portfolio</strong> để hiển thị trên trang chủ</li>
+            <li>2. Thêm video TikTok vào <strong>Video</strong> → chọn loại TikTok/Âm nhạc/AI</li>
+            <li>3. Video loại <strong>&quot;Âm nhạc&quot;</strong> sẽ hiện ở section &quot;MinhLee &amp; Âm Nhạc&quot;</li>
+            <li>4. Video loại <strong>&quot;TikTok&quot;</strong> hoặc bất kỳ sẽ hiện ở section &quot;Video mới&quot;</li>
+            <li>5. Thêm sản phẩm với link mua hàng vào <strong>Sản phẩm</strong></li>
+            <li>6. Xem và trả lời tin nhắn từ khách trong <strong>Tin nhắn</strong></li>
+            <li>7. Chỉnh social links, email trong <strong>Cài đặt</strong></li>
           </ul>
         </div>
       </div>
