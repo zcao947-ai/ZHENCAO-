@@ -95,10 +95,10 @@ export default function VideoGallery() {
                           src={video.thumbnail_url}
                           alt={video.title}
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }}
                         />
-                      ) : (
-                        <div className="placeholder-gradient h-full w-full transition-transform duration-700 group-hover:scale-105" />
-                      )}
+                      ) : null}
+                      <div className={`placeholder-gradient h-full w-full transition-transform duration-700 group-hover:scale-105 ${video.thumbnail_url ? "hidden" : ""}`} />
 
                       {/* Play Icon Overlay */}
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-all duration-300 group-hover:bg-black/40">

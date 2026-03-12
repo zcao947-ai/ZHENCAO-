@@ -64,10 +64,10 @@ export default function MusicSection() {
                   src={item.thumbnail_url}
                   alt={item.title}
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }}
                 />
-              ) : (
-                <div className="placeholder-gradient-gold absolute inset-0" />
-              )}
+              ) : null}
+              <div className={`placeholder-gradient-gold absolute inset-0 ${item.thumbnail_url ? "hidden" : ""}`} />
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-black/30" />
