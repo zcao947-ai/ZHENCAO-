@@ -60,10 +60,23 @@ export default function AdminVideosPage() {
     e.preventDefault();
     if (!form.title) { alert("Vui lòng nhập tiêu đề."); return; }
 
+    const submitData = { ...form };
+
+    // Auto-fetch thumbnail from TikTok if not provided
+    if (submitData.tiktok_url && !submitData.thumbnail_url) {
+      try {
+        const res = await fetch(`/api/tiktok-oembed?url=${encodeURIComponent(submitData.tiktok_url)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.thumbnail_url) submitData.thumbnail_url = data.thumbnail_url;
+        }
+      } catch { /* ignore - thumbnail is optional */ }
+    }
+
     if (editingItem) {
-      await supabase.from("videos").update({ ...form, updated_at: new Date().toISOString() }).eq("id", editingItem.id);
+      await supabase.from("videos").update({ ...submitData, updated_at: new Date().toISOString() }).eq("id", editingItem.id);
     } else {
-      await supabase.from("videos").insert(form);
+      await supabase.from("videos").insert(submitData);
     }
     resetForm();
     fetchItems();

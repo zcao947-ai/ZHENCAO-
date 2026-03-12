@@ -5,13 +5,24 @@ import { createClient } from "@/lib/supabase/client";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import type { Video } from "@/types/database";
 
-function Thumbnail({ src, alt }: { src: string; alt: string }) {
+function Thumbnail({ src, tiktokUrl, alt }: { src?: string | null; tiktokUrl?: string | null; alt: string }) {
+  const [imgSrc, setImgSrc] = useState(src || "");
   const [error, setError] = useState(false);
-  if (error) return null;
+
+  useEffect(() => {
+    if (!src && tiktokUrl) {
+      fetch(`/api/tiktok-oembed?url=${encodeURIComponent(tiktokUrl)}`)
+        .then((r) => r.json())
+        .then((data) => { if (data.thumbnail_url) setImgSrc(data.thumbnail_url); })
+        .catch(() => {});
+    }
+  }, [src, tiktokUrl]);
+
+  if (error || !imgSrc) return null;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={imgSrc}
       alt={alt}
       className="absolute inset-0 h-full w-full object-cover"
       onError={() => setError(true)}
@@ -75,9 +86,7 @@ export default function FeaturedTikTok() {
                         rel="noopener noreferrer"
                         className="absolute inset-0 flex flex-col items-center justify-center gap-4 placeholder-gradient-gold"
                       >
-                        {video.thumbnail_url ? (
-                          <Thumbnail src={video.thumbnail_url} alt={video.title} />
-                        ) : null}
+                        <Thumbnail src={video.thumbnail_url} tiktokUrl={video.tiktok_url} alt={video.title} />
                         <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border border-gold/30 bg-gold/10 transition-colors hover:bg-gold/20">
                           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="ml-1 text-gold">
                             <path d="M8 5v14l11-7z" />
@@ -89,9 +98,7 @@ export default function FeaturedTikTok() {
                       </a>
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 placeholder-gradient-gold">
-                        {video.thumbnail_url ? (
-                          <Thumbnail src={video.thumbnail_url} alt={video.title} />
-                        ) : null}
+                        <Thumbnail src={video.thumbnail_url} tiktokUrl={video.tiktok_url} alt={video.title} />
                         <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full border border-gold/30 bg-gold/10">
                           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="ml-1 text-gold">
                             <path d="M8 5v14l11-7z" />
