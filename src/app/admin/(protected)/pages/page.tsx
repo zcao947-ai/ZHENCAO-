@@ -182,7 +182,18 @@ export default function AdminPagesPage() {
     setSuccessMsg("");
 
     const entry = contentMap[activePage]?.[sectionKey];
-    const content_json = entry?.content_json || {};
+    const content_json = { ...(entry?.content_json || {}) };
+
+    // Auto-resolve image URLs (e.g. imgbb view links → direct image URLs)
+    for (const key of Object.keys(content_json)) {
+      if (key.includes("url") && content_json[key] && !content_json[key].match(/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i)) {
+        try {
+          const res = await fetch(`/api/resolve-image?url=${encodeURIComponent(content_json[key])}`);
+          const data = await res.json();
+          if (data.image_url) content_json[key] = data.image_url;
+        } catch { /* ignore */ }
+      }
+    }
 
     if (entry?.id) {
       await supabase
